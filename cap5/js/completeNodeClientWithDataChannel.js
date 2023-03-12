@@ -11,6 +11,7 @@ var sendChannel, receiveChannel;
 var sendButton = document.getElementById("sendButton");
 var sendTextarea = document.getElementById("dataChannelSend");
 var receiveTextarea = document.getElementById("dataChannelReceive");
+var mainDiv = document.getElementById("chat");
 
 // HTML5 <video> elements
 var localVideo = document.querySelector('#localVideo');
@@ -30,6 +31,13 @@ var localStream;
 var remoteStream;
 // Peer Connection
 var pc;
+
+document.addEventListener("keypress", function(event) {
+  if (event.key === "Enter") {
+    sendData();
+  }
+});
+
 
 /*
 var webrtcDetectedBrowser = null;
@@ -77,6 +85,8 @@ function trace(text) {
 /////////////////////////////////////////////
 // Let's get started: prompt user for input (room name)
 var room = prompt('Enter room name:');
+
+var userName = prompt('Enter your name:');
 
 var urlServer = location.origin;
 console.log("socket.io client connecting to server ", urlServer );
@@ -242,10 +252,16 @@ function createPeerConnection() {
 
 // Data channel management
 function sendData() {
-  var data = sendTextarea.value;
+  var data = userName + ": " + sendTextarea.value + "\n";
+  sendTextarea.value = "";
   if(isInitiator) sendChannel.send(data);
   else receiveChannel.send(data);
   trace('Sent data: ' + data);
+
+  var message = document.createElement('p');
+  message.textContent = data;
+  message.classList.add('message-sender');
+  mainDiv.appendChild(message);
 }
 
 // Handlers...
@@ -260,7 +276,11 @@ function gotReceiveChannel(event) {
 
 function handleMessage(event) {
   trace('Received message: ' + event.data);
-  receiveTextarea.value += event.data + '\n';
+
+  var message = document.createElement('p');
+  message.textContent = event.data;
+  message.classList.add('message-receiver');
+  mainDiv.appendChild(message);
 }
 
 function handleSendChannelStateChange() {
